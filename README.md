@@ -1,4 +1,4 @@
-# Predictive Maintenance Project
+# Predictive Maintenance Model
 ## Delta Industries Ltd.
 
 ### Project Overview
