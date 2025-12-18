@@ -127,7 +127,7 @@ def compute_model_metrics():
     X_rul_scaled = rul_scaler.transform(X)
     rul_pred = rul_model.predict(X_rul_scaled)
     rul_mae = mean_absolute_error(y_rul, rul_pred)
-    rul_rmse = mean_squared_error(y_rul, rul_pred, squared=False)
+    rul_rmse = np.sqrt(mean_squared_error(y_rul, rul_pred))
     rul_r2 = r2_score(y_rul, rul_pred)
 
     # Failure classification metrics
