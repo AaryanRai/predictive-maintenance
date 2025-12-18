@@ -428,28 +428,46 @@ def main():
     
     # Key Metrics Row
     st.markdown('<div class="section-header">Key Metrics</div>', unsafe_allow_html=True)
+    
+    # Get latest snapshot per machine for current status
+    latest_snapshots = df.sort_values('snapshot_date').groupby('machine_id').last().reset_index()
+    filtered_latest = filtered_df.sort_values('snapshot_date').groupby('machine_id').last().reset_index()
+    
     col1, col2, col3, col4 = st.columns(4)
     
-    # Fix: Count unique machines, not total rows
-    unique_machines = filtered_df['machine_id'].nunique()
-    total_unique_machines = df['machine_id'].nunique()
+    # Total unique machines
+    unique_machines = filtered_latest['machine_id'].nunique()
+    total_unique_machines = latest_snapshots['machine_id'].nunique()
     
     with col1:
         st.metric("Total Machines", unique_machines, delta=f"{unique_machines - total_unique_machines}" if unique_machines != total_unique_machines else None)
     
     with col2:
-        red_machines = filtered_df[filtered_df['risk_category'] == 'RED']
-        red_count = red_machines['machine_id'].nunique() if len(red_machines) > 0 else 0
-        total_red = df[df['risk_category'] == 'RED']['machine_id'].nunique() if len(df[df['risk_category'] == 'RED']) > 0 else 0
-        st.metric("At Risk (RED)", red_count, delta=f"{red_count - total_red}" if red_count != total_red else None)
+        # Count machines currently in RED (latest snapshot per machine)
+        red_current = filtered_latest[filtered_latest['risk_category'] == 'RED']
+        red_count = len(red_current) if len(red_current) > 0 else 0
+        total_red_current = len(latest_snapshots[latest_snapshots['risk_category'] == 'RED'])
+        delta_val = red_count - total_red_current if red_count != total_red_current else None
+        st.metric("At Risk (RED)", red_count, delta=f"{delta_val}" if delta_val is not None else None, 
+                 help="Number of machines currently in RED status (based on latest snapshot per machine)")
     
     with col3:
-        avg_rul = filtered_df['RUL_days_predicted'].mean()
-        st.metric("Average RUL", f"{avg_rul:.1f} days")
+        # Average RUL from latest snapshots
+        avg_rul = filtered_latest['RUL_days_predicted'].mean()
+        st.metric("Average RUL", f"{avg_rul:.1f} days", 
+                 help="Average RUL across all machines (latest snapshot per machine)")
     
     with col4:
-        avg_failure_prob = filtered_df['failure_probability'].mean()
-        st.metric("Avg Failure Probability", f"{avg_failure_prob:.1%}")
+        # Average failure probability from latest snapshots
+        avg_failure_prob = filtered_latest['failure_probability'].mean()
+        st.metric("Avg Failure Probability", f"{avg_failure_prob:.1%}",
+                 help="Average failure probability across all machines (latest snapshot per machine)")
+    
+    # Add context about current status
+    if len(filtered_latest) > 0:
+        yellow_count = len(filtered_latest[filtered_latest['risk_category'] == 'YELLOW'])
+        green_count = len(filtered_latest[filtered_latest['risk_category'] == 'GREEN'])
+        st.caption(f"Current Status Distribution: {red_count} RED | {yellow_count} YELLOW | {green_count} GREEN (based on latest snapshot per machine)")
     
     st.markdown("---")
     
@@ -824,26 +842,26 @@ def main():
     
     # Alert Panel - RED Category Machines
     st.markdown('<div class="section-header">Urgent Action Required (RED Category)</div>', unsafe_allow_html=True)
-    red_machines = filtered_df[filtered_df['risk_category'] == 'RED'].copy()
     
-    if len(red_machines) > 0:
-        # Get unique machines in RED category
-        red_unique_machines = red_machines['machine_id'].unique()
-        
+    # Get latest snapshot per machine for current status
+    filtered_latest_snapshots = filtered_df.sort_values('snapshot_date').groupby('machine_id').last().reset_index()
+    red_machines_current = filtered_latest_snapshots[filtered_latest_snapshots['risk_category'] == 'RED'].copy()
+    
+    if len(red_machines_current) > 0:
         # Sort by RUL (lowest first) and failure probability (highest first)
-        red_machines = red_machines.sort_values(['RUL_days_predicted', 'failure_probability'], ascending=[True, False])
+        red_machines_current = red_machines_current.sort_values(['RUL_days_predicted', 'failure_probability'], ascending=[True, False])
         
         # Display key metrics for RED machines
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.metric("Total RED Machines", len(red_unique_machines))
+            st.metric("Total RED Machines", len(red_machines_current))
         with col2:
-            st.metric("Lowest RUL", f"{red_machines['RUL_days_predicted'].min():.1f} days")
+            st.metric("Lowest RUL", f"{red_machines_current['RUL_days_predicted'].min():.1f} days")
         with col3:
-            st.metric("Highest Failure Prob", f"{red_machines['failure_probability'].max():.1%}")
+            st.metric("Highest Failure Prob", f"{red_machines_current['failure_probability'].max():.1%}")
         
-        # Display table (show latest snapshot per machine)
-        red_latest = red_machines.groupby('machine_id').first().reset_index()
+        # Display table (already latest snapshot per machine)
+        red_latest = red_machines_current.copy()
         display_cols = ['machine_id', 'machine_type', 'RUL_days_predicted', 'failure_probability', 
                        'criticality_score', 'snapshot_date']
         red_display = red_latest[display_cols].copy()
