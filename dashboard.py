@@ -28,45 +28,39 @@ from sklearn.metrics import (
 )
 import subprocess
 import os
-from io import BytesIO
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
 
 warnings.filterwarnings('ignore')
 
 # Page configuration
 st.set_page_config(
     page_title="Delta Industries - Predictive Maintenance",
+    page_icon="⚙️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for a modern, minimal layout
+# Custom CSS for better styling
 st.markdown("""
     <style>
     .main-header {
-        font-size: 2.1rem;
-        font-weight: 600;
-        color: #111827;
-        text-align: left;
-        margin-bottom: 0.5rem;
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #1f77b4;
+        text-align: center;
+        margin-bottom: 1rem;
     }
-    .subheader-text {
-        color: #4b5563;
-        font-size: 0.95rem;
-        margin-bottom: 1.5rem;
+    .metric-card {
+        background-color: #f0f2f6;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border-left: 4px solid #1f77b4;
     }
-    .section-card {
-        background-color: #ffffff;
-        padding: 1.2rem 1.4rem;
-        border-radius: 0.6rem;
-        border: 1px solid #e5e7eb;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
-        margin-bottom: 1.2rem;
-    }
-    .muted-text {
-        color: #6b7280;
-        font-size: 0.9rem;
+    .alert-box {
+        background-color: #ffebee;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border-left: 4px solid #d32f2f;
+        margin: 1rem 0;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -79,7 +73,7 @@ def load_dashboard_data():
         df['snapshot_date'] = pd.to_datetime(df['snapshot_date'])
         return df
     except FileNotFoundError:
-        st.error("❌ Dashboard outputs file not found. Please run 'python3 generate_dashboard_outputs.py' first.")
+        st.error("Dashboard outputs file not found. Please run 'python3 generate_dashboard_outputs.py' first.")
         st.stop()
 
 
@@ -200,95 +194,10 @@ def run_full_pipeline():
                 st.text("\n[stderr]\n" + (e.stderr or ""))
 
 
-def build_pdf_report(base_df, model_metrics):
-    """Build a concise PDF report summarizing dataset, models, and assumptions."""
-    buffer = BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
-    width, height = A4
-    y = height - 50
-
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(50, y, "Delta Industries - Predictive Maintenance Report")
-    y -= 30
-
-    c.setFont("Helvetica", 10)
-    c.drawString(50, y, f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
-    y -= 25
-
-    # Dataset section
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y, "1. Dataset Overview")
-    y -= 18
-    c.setFont("Helvetica", 10)
-    total_rows = len(base_df)
-    machines = base_df["machine_id"].nunique()
-    date_min = base_df["snapshot_date"].min().strftime("%Y-%m-%d")
-    date_max = base_df["snapshot_date"].max().strftime("%Y-%m-%d")
-    c.drawString(60, y, f"- Total records: {total_rows}")
-    y -= 14
-    c.drawString(60, y, f"- Unique machines: {machines}")
-    y -= 14
-    c.drawString(60, y, f"- Snapshot date range: {date_min} to {date_max}")
-    y -= 20
-
-    # Model metrics section
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y, "2. Model Performance")
-    y -= 18
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(60, y, "RUL Model (Linear Regression)")
-    y -= 14
-    c.setFont("Helvetica", 10)
-    c.drawString(70, y, f"- MAE: {model_metrics['rul']['mae']:.1f} days")
-    y -= 14
-    c.drawString(70, y, f"- RMSE: {model_metrics['rul']['rmse']:.1f} days")
-    y -= 14
-    c.drawString(70, y, f"- R-squared: {model_metrics['rul']['r2']:.3f}")
-    y -= 18
-
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(60, y, "Failure Risk Model (Logistic Regression)")
-    y -= 14
-    c.setFont("Helvetica", 10)
-    c.drawString(70, y, f"- ROC-AUC: {model_metrics['failure']['auc']:.3f}")
-    y -= 14
-    c.drawString(70, y, f"- Precision: {model_metrics['failure']['precision']:.3f}")
-    y -= 14
-    c.drawString(70, y, f"- Recall: {model_metrics['failure']['recall']:.3f}")
-    y -= 20
-
-    # Cost assumptions section (aligned with evaluation.py)
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y, "3. Cost Assumptions")
-    y -= 18
-    c.setFont("Helvetica", 10)
-    c.drawString(60, y, "- Planned maintenance cost: $2,000 per machine")
-    y -= 14
-    c.drawString(60, y, "- Unplanned downtime cost: $10,000 per machine")
-    y -= 14
-    c.drawString(60, y, "- Emergency repair cost: $5,000 per machine")
-    y -= 20
-
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y, "4. Risk Categories and Business Rules")
-    y -= 18
-    c.setFont("Helvetica", 10)
-    c.drawString(60, y, "- RED: failure_probability ≥ 0.7 or RUL ≤ 30 days")
-    y -= 14
-    c.drawString(60, y, "- YELLOW: failure_probability ≥ 0.4 or RUL ≤ 60 days")
-    y -= 14
-    c.drawString(60, y, "- GREEN: otherwise (monitor only)")
-
-    c.showPage()
-    c.save()
-    buffer.seek(0)
-    return buffer
-
-
 def main():
-    # Header and introduction
-    st.markdown('<div class="main-header">Delta Industries - Predictive Maintenance Dashboard</div>', unsafe_allow_html=True)
-    st.markdown('<div class="subheader-text">Remaining useful life and failure risk insights for production machinery, with clear business assumptions and cost-aware recommendations.</div>', unsafe_allow_html=True)
+    # Header
+    st.markdown('<div class="main-header">⚙️ Delta Industries - Predictive Maintenance Dashboard</div>', unsafe_allow_html=True)
+    st.markdown("---")
     
     # Load data
     df = load_dashboard_data()
@@ -296,7 +205,7 @@ def main():
     model_metrics = compute_model_metrics()
     
     # Sidebar controls: data actions + filters
-    st.sidebar.header("Data and pipeline")
+    st.sidebar.header("⚙️ Data & Pipeline Controls")
     col_generate, col_download = st.sidebar.columns(2)
     with col_generate:
         if st.button("Run pipeline", help="Regenerate data, retrain models, and refresh dashboard outputs."):
@@ -319,7 +228,7 @@ def main():
             st.caption("Base dataset not found yet. Run the pipeline first.")
     
     # Sidebar filters
-    st.sidebar.header("Filters")
+    st.sidebar.header("🔍 Filters")
     
     # Machine type filter
     machine_types = ['All'] + sorted(df['machine_type'].unique().tolist())
@@ -350,7 +259,7 @@ def main():
         filtered_df = filtered_df[filtered_df['failure_flag'] == 0]
     
     # Key Metrics Row
-    st.subheader("Key metrics")
+    st.subheader("📊 Key Metrics")
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
@@ -358,7 +267,7 @@ def main():
     
     with col2:
         red_count = len(filtered_df[filtered_df['risk_category'] == 'RED'])
-        st.metric("At risk (RED)", red_count, delta=f"{red_count - len(df[df['risk_category'] == 'RED'])}")
+        st.metric("🔴 At Risk (RED)", red_count, delta=f"{red_count - len(df[df['risk_category'] == 'RED'])}")
     
     with col3:
         avg_rul = filtered_df['RUL_days_predicted'].mean()
@@ -370,27 +279,12 @@ def main():
     
     st.markdown("---")
     
-    # Explanatory overview cards
-    st.markdown(" ")
-    info_col1, info_col2, info_col3 = st.columns(3)
-    with info_col1:
-        with st.container():
-            st.markdown('<div class="section-card"><strong>Dataset</strong><br><span class="muted-text">Synthetic machine-health data for Delta Industries, with weekly snapshots per machine, sensor readings, degradation patterns, and engineered targets for remaining useful life (RUL) and 30-day failure risk.</span></div>', unsafe_allow_html=True)
-    with info_col2:
-        with st.container():
-            st.markdown('<div class="section-card"><strong>Models</strong><br><span class="muted-text">A linear regression model predicts continuous RUL in days, and a logistic regression model estimates the probability of failure within 30 days, using scaled numerical features and encoded machine types.</span></div>', unsafe_allow_html=True)
-    with info_col3:
-        with st.container():
-            st.markdown('<div class="section-card"><strong>Cost and risk logic</strong><br><span class="muted-text">Business rules classify machines into RED, YELLOW, and GREEN categories using RUL and failure probability, assuming $2k planned maintenance, $10k downtime, and $5k emergency repair per failure.</span></div>', unsafe_allow_html=True)
-
-    st.markdown("---")
-
     # Main Dashboard Sections
     # Row 1: RUL Overview and Failure Risk Distribution
     col1, col2 = st.columns(2)
     
     with col1:
-        st.subheader("RUL overview")
+        st.subheader("📈 RUL Overview")
         
         # RUL Distribution Histogram
         fig_rul_hist = px.histogram(
@@ -431,7 +325,7 @@ def main():
             st.plotly_chart(fig_rul_comparison, use_container_width=True)
     
     with col2:
-        st.subheader("Failure risk distribution")
+        st.subheader("⚠️ Failure Risk Distribution")
         
         # Risk Category Pie Chart
         risk_counts = filtered_df['risk_category'].value_counts()
@@ -464,7 +358,7 @@ def main():
     
     # Model Performance Summary
     if model_metrics is not None:
-        st.subheader("Model performance (full dataset)")
+        st.subheader("🧪 Model Performance (On Full Dataset)")
         col_rul, col_fail = st.columns(2)
 
         with col_rul:
@@ -500,7 +394,7 @@ def main():
     st.markdown("---")
     
     # Alert Panel - RED Category Machines
-    st.subheader("Urgent action required (RED category)")
+    st.subheader("🚨 Urgent Action Required (RED Category)")
     red_machines = filtered_df[filtered_df['risk_category'] == 'RED'].copy()
     
     if len(red_machines) > 0:
@@ -529,14 +423,14 @@ def main():
         st.dataframe(red_display, use_container_width=True, hide_index=True)
         
         # Action recommendations
-        st.info("Action required: schedule maintenance within 1 week for these machines. Prepare spare parts and assign priority technicians.")
+        st.info("💡 **Action Required**: Schedule maintenance within 1 week for these machines. Prepare spare parts and assign priority technicians.")
     else:
         st.success("✅ No machines currently in RED category. All systems operating normally.")
     
     st.markdown("---")
     
     # Machine Details Table
-    st.subheader("Machine details")
+    st.subheader("📋 Machine Details Table")
     
     # Sort options
     sort_by = st.selectbox("Sort by", ['RUL (Lowest First)', 'RUL (Highest First)', 
@@ -606,7 +500,7 @@ def main():
     st.markdown("---")
     
     # Maintenance Schedule
-    st.subheader("Maintenance schedule")
+    st.subheader("📅 Maintenance Schedule")
     
     # Create maintenance schedule based on RUL
     schedule_df = filtered_df.copy()
@@ -631,23 +525,11 @@ def main():
     
     st.dataframe(schedule_display.head(50), use_container_width=True, hide_index=True)
     
-    st.info("Note: recommended maintenance dates are calculated based on predicted RUL. Machines with RED category should be scheduled immediately.")
-    
-    # Downloadable PDF report
-    if base_df is not None and model_metrics is not None:
-        pdf_buffer = build_pdf_report(base_df, model_metrics)
-        st.markdown("---")
-        st.subheader("Export")
-        st.download_button(
-            label="Download dashboard report (PDF)",
-            data=pdf_buffer,
-            file_name="delta_industries_predictive_maintenance_report.pdf",
-            mime="application/pdf",
-        )
+    st.info("💡 **Note**: Recommended maintenance dates are calculated based on predicted RUL. Machines with RED category should be scheduled immediately.")
     
     # Footer
     st.markdown("---")
-    st.markdown("Delta Industries Ltd. | Predictive Maintenance System | Generated for project evaluation")
+    st.markdown("**Delta Industries Ltd.** | Predictive Maintenance System | Generated for Project Evaluation")
 
 if __name__ == "__main__":
     main()
