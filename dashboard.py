@@ -41,42 +41,42 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Modern CSS styling with improved readability
+# Modern CSS styling for dark background with white text
 st.markdown("""
     <style>
-    /* Main text styling - high contrast for readability */
+    /* Main text styling - white text for dark background */
     .main-header {
         font-size: 2.8rem;
         font-weight: 700;
-        color: #000000;
+        color: #ffffff;
         text-align: center;
         margin-bottom: 0.5rem;
         letter-spacing: -0.02em;
     }
     .subheader {
         font-size: 1.15rem;
-        color: #333333;
+        color: #e0e0e0;
         text-align: center;
         margin-bottom: 2rem;
         font-weight: 500;
     }
     .info-card {
-        background: #ffffff;
+        background: rgba(255, 255, 255, 0.1);
         padding: 1.5rem;
         border-radius: 12px;
-        border: 2px solid #e0e0e0;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         margin-bottom: 1rem;
     }
     .info-card h4 {
-        color: #000000;
+        color: #ffffff;
         font-size: 1.2rem;
         font-weight: 700;
         margin-bottom: 0.75rem;
         margin-top: 0;
     }
     .info-card p {
-        color: #1a1a1a;
+        color: #e0e0e0;
         font-size: 1rem;
         line-height: 1.7;
         margin: 0;
@@ -85,28 +85,44 @@ st.markdown("""
     .section-header {
         font-size: 1.6rem;
         font-weight: 700;
-        color: #000000;
+        color: #ffffff;
         margin-bottom: 1rem;
         padding-bottom: 0.5rem;
         border-bottom: 3px solid #667eea;
     }
-    /* Improve Streamlit default text */
+    .explanation-box {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+        margin: 1rem 0;
+    }
+    .explanation-box p {
+        color: #e0e0e0;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+    /* Improve Streamlit default text for dark background */
     .stMarkdown {
-        color: #1a1a1a;
+        color: #ffffff;
+    }
+    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown h4 {
+        color: #ffffff;
     }
     .stMetric {
-        background-color: #ffffff;
-        border: 1px solid #e0e0e0;
+        background-color: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 8px;
         padding: 1rem;
     }
     .stMetric label {
-        color: #000000;
+        color: #e0e0e0;
         font-weight: 600;
         font-size: 0.95rem;
     }
     .stMetric [data-testid="stMetricValue"] {
-        color: #000000;
+        color: #ffffff;
         font-weight: 700;
     }
     /* Cost breakdown styling */
@@ -457,12 +473,12 @@ def main():
         fig_rul_hist.add_vline(x=60, line_dash="dash", line_color="#f57c00", annotation_text="60 days threshold", annotation_position="top")
         fig_rul_hist.update_layout(
             height=400,
-            plot_bgcolor='white',
-            paper_bgcolor='white',
-            font=dict(size=13, color='#000000', family='Arial'),
-            title_font=dict(size=16, color='#000000', family='Arial'),
-            xaxis=dict(title_font=dict(size=13, color='#000000'), tickfont=dict(size=12, color='#000000')),
-            yaxis=dict(title_font=dict(size=13, color='#000000'), tickfont=dict(size=12, color='#000000'))
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(size=13, color='#ffffff', family='Arial'),
+            title_font=dict(size=16, color='#ffffff', family='Arial'),
+            xaxis=dict(title_font=dict(size=13, color='#ffffff'), tickfont=dict(size=12, color='#ffffff'), gridcolor='rgba(255,255,255,0.1)'),
+            yaxis=dict(title_font=dict(size=13, color='#ffffff'), tickfont=dict(size=12, color='#ffffff'), gridcolor='rgba(255,255,255,0.1)')
         )
         st.plotly_chart(fig_rul_hist, use_container_width=True)
         
@@ -490,13 +506,13 @@ def main():
             ))
             fig_rul_comparison.update_layout(
                 height=400,
-                plot_bgcolor='white',
-                paper_bgcolor='white',
-                font=dict(size=13, color='#000000', family='Arial'),
-                title_font=dict(size=16, color='#000000', family='Arial'),
-                xaxis=dict(title_font=dict(size=13, color='#000000'), tickfont=dict(size=12, color='#000000')),
-                yaxis=dict(title_font=dict(size=13, color='#000000'), tickfont=dict(size=12, color='#000000')),
-                legend=dict(font=dict(size=12, color='#000000'))
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                font=dict(size=13, color='#ffffff', family='Arial'),
+                title_font=dict(size=16, color='#ffffff', family='Arial'),
+                xaxis=dict(title_font=dict(size=13, color='#ffffff'), tickfont=dict(size=12, color='#ffffff'), gridcolor='rgba(255,255,255,0.1)'),
+                yaxis=dict(title_font=dict(size=13, color='#ffffff'), tickfont=dict(size=12, color='#ffffff'), gridcolor='rgba(255,255,255,0.1)'),
+                legend=dict(font=dict(size=12, color='#ffffff'), bgcolor='rgba(0,0,0,0.5)')
             )
             st.plotly_chart(fig_rul_comparison, use_container_width=True)
     
@@ -514,11 +530,11 @@ def main():
         )
         fig_pie.update_layout(
             height=400,
-            plot_bgcolor='white',
-            paper_bgcolor='white',
-            font=dict(size=13, color='#000000', family='Arial'),
-            title_font=dict(size=16, color='#000000', family='Arial'),
-            legend=dict(font=dict(size=13, color='#000000'))
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(size=13, color='#ffffff', family='Arial'),
+            title_font=dict(size=16, color='#ffffff', family='Arial'),
+            legend=dict(font=dict(size=13, color='#ffffff'), bgcolor='rgba(0,0,0,0.5)')
         )
         st.plotly_chart(fig_pie, use_container_width=True)
         
@@ -536,13 +552,13 @@ def main():
         fig_failure_prob.add_vline(x=0.4, line_dash="dash", line_color="#f57c00", annotation_text="40% threshold", annotation_position="top")
         fig_failure_prob.update_layout(
             height=400,
-            plot_bgcolor='white',
-            paper_bgcolor='white',
-            font=dict(size=13, color='#000000', family='Arial'),
-            title_font=dict(size=16, color='#000000', family='Arial'),
-            xaxis=dict(title_font=dict(size=13, color='#000000'), tickfont=dict(size=12, color='#000000')),
-            yaxis=dict(title_font=dict(size=13, color='#000000'), tickfont=dict(size=12, color='#000000')),
-            legend=dict(font=dict(size=12, color='#000000'))
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(size=13, color='#ffffff', family='Arial'),
+            title_font=dict(size=16, color='#ffffff', family='Arial'),
+            xaxis=dict(title_font=dict(size=13, color='#ffffff'), tickfont=dict(size=12, color='#ffffff'), gridcolor='rgba(255,255,255,0.1)'),
+            yaxis=dict(title_font=dict(size=13, color='#ffffff'), tickfont=dict(size=12, color='#ffffff'), gridcolor='rgba(255,255,255,0.1)'),
+            legend=dict(font=dict(size=12, color='#ffffff'), bgcolor='rgba(0,0,0,0.5)')
         )
         st.plotly_chart(fig_failure_prob, use_container_width=True)
     
@@ -576,13 +592,13 @@ def main():
             y=["Low Risk (0)", "High Risk (1)"],
         )
         cm_fig.update_layout(
-            title=dict(text="Failure Risk Model - Confusion Matrix", font=dict(size=16, color='#000000', family='Arial')),
+            title=dict(text="Failure Risk Model - Confusion Matrix", font=dict(size=16, color='#ffffff', family='Arial')),
             height=400,
-            plot_bgcolor='white',
-            paper_bgcolor='white',
-            font=dict(size=13, color='#000000', family='Arial'),
-            xaxis=dict(title_font=dict(size=13, color='#000000'), tickfont=dict(size=12, color='#000000')),
-            yaxis=dict(title_font=dict(size=13, color='#000000'), tickfont=dict(size=12, color='#000000'))
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(size=13, color='#ffffff', family='Arial'),
+            xaxis=dict(title_font=dict(size=13, color='#ffffff'), tickfont=dict(size=12, color='#ffffff')),
+            yaxis=dict(title_font=dict(size=13, color='#ffffff'), tickfont=dict(size=12, color='#ffffff'))
         )
         st.plotly_chart(cm_fig, use_container_width=True)
         
@@ -594,7 +610,7 @@ def main():
         total_costs = cb['planned_maintenance_cost'] + cb['missed_failures_cost']
         
         # Cost Assumptions Section
-        st.markdown("### Cost Assumptions")
+        st.markdown('<h3 style="color: #ffffff;">Cost Assumptions</h3>', unsafe_allow_html=True)
         assumption_col1, assumption_col2, assumption_col3 = st.columns(3)
         with assumption_col1:
             st.metric("Planned Maintenance", "$2,000", "per machine")
@@ -609,7 +625,7 @@ def main():
         cost_col1, cost_col2 = st.columns(2)
         
         with cost_col1:
-            st.markdown("#### Costs Incurred")
+            st.markdown('<h4 style="color: #ffffff;">Costs Incurred</h4>', unsafe_allow_html=True)
             st.metric(
                 "Planned Maintenance",
                 f"${cb['planned_maintenance_cost']:,.0f}",
@@ -628,7 +644,7 @@ def main():
             )
         
         with cost_col2:
-            st.markdown("#### Savings Generated")
+            st.markdown('<h4 style="color: #ffffff;">Savings Generated</h4>', unsafe_allow_html=True)
             st.metric(
                 "Prevented Downtime",
                 f"${cb['prevented_downtime_savings']:,.0f}",
@@ -650,7 +666,17 @@ def main():
         st.markdown("---")
         
         # Confusion Matrix Explanation
-        st.markdown("### Model Performance Breakdown")
+        st.markdown('<h3 style="color: #ffffff;">Model Performance Breakdown</h3>', unsafe_allow_html=True)
+        st.markdown("""
+        <div class="explanation-box">
+            <p><strong>Confusion Matrix Explanation:</strong> The confusion matrix shows how well the failure risk model classifies machines. 
+            <strong>True Positives (TP):</strong> Machines correctly identified as high-risk - these are scheduled for maintenance, preventing downtime. 
+            <strong>False Positives (FP):</strong> Machines incorrectly flagged as high-risk - these result in unnecessary maintenance costs. 
+            <strong>False Negatives (FN):</strong> Machines incorrectly identified as low-risk - these are missed failures that lead to unplanned 
+            downtime and emergency repairs. <strong>True Negatives (TN):</strong> Machines correctly identified as low-risk - no action needed, 
+            saving maintenance costs. A good model maximizes TP and TN while minimizing FP and FN.</p>
+        </div>
+        """, unsafe_allow_html=True)
         confusion_col1, confusion_col2, confusion_col3, confusion_col4 = st.columns(4)
         
         with confusion_col1:
@@ -670,6 +696,129 @@ def main():
             st.warning(f"**ROI Status: Needs Optimization** - Current net benefit is ${cb['net_benefit']:,.0f}. Consider adjusting prediction thresholds or improving model accuracy to increase cost savings.")
     else:
         st.info("Model performance metrics are not available yet. Run the full pipeline to train models and generate data.")
+    
+    st.markdown("---")
+    
+    # EDA Visualizations Section
+    st.markdown('<div class="section-header">Exploratory Data Analysis Visualizations</div>', unsafe_allow_html=True)
+    
+    # Check if output images exist
+    import os
+    outputs_dir = 'outputs'
+    
+    # RUL Distribution
+    if os.path.exists(f'{outputs_dir}/rul_distribution.png'):
+        st.markdown("### RUL Distribution Analysis")
+        st.image(f'{outputs_dir}/rul_distribution.png', use_container_width=True)
+        st.markdown("""
+        <div class="explanation-box">
+            <p><strong>Explanation:</strong> This histogram shows the distribution of Remaining Useful Life (RUL) values across all machine snapshots. 
+            The chart helps identify how many machines are in critical (low RUL), warning (medium RUL), and safe (high RUL) states. 
+            The box plot on the right compares RUL distributions between high-risk and low-risk machines, showing that machines with 
+            higher failure risk tend to have lower RUL values, validating the predictive model's logic.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown("---")
+    
+    # Failure Risk Distribution
+    if os.path.exists(f'{outputs_dir}/failure_risk_distribution.png'):
+        st.markdown("### Failure Risk Distribution")
+        st.image(f'{outputs_dir}/failure_risk_distribution.png', use_container_width=True)
+        st.markdown("""
+        <div class="explanation-box">
+            <p><strong>Explanation:</strong> This visualization shows the binary distribution of failure risk (fail_in_30d: 0 = Low Risk, 1 = High Risk). 
+            The bar chart and pie chart display the proportion of machines at high risk versus low risk. This helps understand the class balance 
+            in the dataset. A balanced distribution ensures the model can learn from both failure and non-failure cases effectively.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown("---")
+    
+    # Degradation Patterns
+    if os.path.exists(f'{outputs_dir}/degradation_patterns.png'):
+        st.markdown("### Machine Degradation Patterns")
+        st.image(f'{outputs_dir}/degradation_patterns.png', use_container_width=True)
+        st.markdown("""
+        <div class="explanation-box">
+            <p><strong>Explanation:</strong> These four charts track how sensor values change as machines approach failure (RUL decreases). 
+            <strong>Temperature:</strong> Increases as components degrade and generate more heat. <strong>Vibration:</strong> Increases due to bearing wear 
+            and misalignment. <strong>Pressure:</strong> Decreases as seals degrade and leaks develop. <strong>Load Factor:</strong> Decreases as 
+            machine efficiency degrades. These patterns demonstrate the physical relationships that the predictive models learn, showing that 
+            sensor degradation is a reliable indicator of impending failure.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown("---")
+    
+    # Correlation Heatmap
+    if os.path.exists(f'{outputs_dir}/correlation_heatmap.png'):
+        st.markdown("### Feature Correlation Analysis")
+        st.image(f'{outputs_dir}/correlation_heatmap.png', use_container_width=True)
+        st.markdown("""
+        <div class="explanation-box">
+            <p><strong>Explanation:</strong> This heatmap shows correlations between all features and target variables (RUL_days and fail_in_30d). 
+            Strong negative correlations (dark blue) with RUL indicate features that decrease as failure approaches (e.g., vibration_std_7d, 
+            pressure_drop_pct_7d). Strong positive correlations (dark red) indicate features that increase with failure risk. This analysis 
+            helps identify the most important predictive features and validates that the dataset follows logical physical relationships 
+            between sensor readings and machine health.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown("---")
+    
+    # Model Performance Visualization
+    if os.path.exists(f'{outputs_dir}/model_performance.png'):
+        st.markdown("### Model Performance Visualization")
+        st.image(f'{outputs_dir}/model_performance.png', use_container_width=True)
+        st.markdown("""
+        <div class="explanation-box">
+            <p><strong>Explanation:</strong> This comprehensive visualization shows model performance across four key metrics. 
+            <strong>Top Left - Actual vs Predicted RUL:</strong> Scatter plot showing how well the RUL model predicts actual values. 
+            Points close to the diagonal line indicate accurate predictions. <strong>Top Right - RUL Residuals:</strong> Shows prediction errors 
+            (actual - predicted). A random scatter around zero indicates good model fit. <strong>Bottom Left - Failure Probability Distribution:</strong> 
+            Histogram showing how the failure risk model separates high-risk (red) from low-risk (green) machines. Good separation indicates 
+            effective classification. <strong>Bottom Right - ROC Curve:</strong> Shows the trade-off between true positive rate and false positive 
+            rate. A curve closer to the top-left corner indicates better model performance.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown("---")
+    
+    # Add explanations for interactive charts
+    st.markdown('<div class="section-header">Interactive Chart Explanations</div>', unsafe_allow_html=True)
+    
+    explanation_col1, explanation_col2 = st.columns(2)
+    
+    with explanation_col1:
+        st.markdown("""
+        <div class="explanation-box">
+            <p><strong>RUL Distribution Histogram:</strong> Shows the frequency distribution of predicted RUL values. The red dashed line at 30 days 
+            marks the critical threshold (urgent maintenance needed), and the orange line at 60 days marks the warning threshold (schedule 
+            maintenance soon). This helps maintenance teams understand how many machines require immediate attention.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="explanation-box">
+            <p><strong>Predicted vs Actual RUL Scatter Plot:</strong> Compares model predictions with actual RUL values. Points are color-coded by 
+            risk category (RED, YELLOW, GREEN). Points close to the diagonal gray line indicate accurate predictions. This visualization helps 
+            assess model accuracy and identify any systematic prediction errors.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with explanation_col2:
+        st.markdown("""
+        <div class="explanation-box">
+            <p><strong>Risk Category Pie Chart:</strong> Shows the proportion of machines in each risk category (RED, YELLOW, GREEN). This gives 
+            a quick overview of overall fleet health. A higher proportion of GREEN machines indicates a healthy fleet, while more RED machines 
+            suggest urgent maintenance planning is needed.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="explanation-box">
+            <p><strong>Failure Probability Distribution:</strong> Histogram showing the distribution of predicted failure probabilities (0-100%). 
+            The red dashed line at 70% marks the high-risk threshold, and the orange line at 40% marks the moderate-risk threshold. Machines with 
+            probabilities above these thresholds are flagged for maintenance. This helps prioritize which machines need attention based on failure 
+            likelihood.</p>
+        </div>
+        """, unsafe_allow_html=True)
     
     st.markdown("---")
     
