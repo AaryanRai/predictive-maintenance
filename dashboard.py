@@ -41,83 +41,116 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Modern CSS styling
+# Modern CSS styling with improved readability
 st.markdown("""
     <style>
+    /* Main text styling - high contrast for readability */
     .main-header {
         font-size: 2.8rem;
         font-weight: 700;
-        color: #1a1a1a;
+        color: #000000;
         text-align: center;
         margin-bottom: 0.5rem;
         letter-spacing: -0.02em;
     }
     .subheader {
-        font-size: 1.1rem;
-        color: #666;
+        font-size: 1.15rem;
+        color: #333333;
         text-align: center;
         margin-bottom: 2rem;
-        font-weight: 400;
+        font-weight: 500;
     }
     .info-card {
-        background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+        background: #ffffff;
         padding: 1.5rem;
         border-radius: 12px;
-        border: 1px solid #e1e8ed;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        border: 2px solid #e0e0e0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         margin-bottom: 1rem;
     }
     .info-card h4 {
-        color: #1a1a1a;
-        font-size: 1.1rem;
-        font-weight: 600;
+        color: #000000;
+        font-size: 1.2rem;
+        font-weight: 700;
         margin-bottom: 0.75rem;
         margin-top: 0;
     }
     .info-card p {
-        color: #4a5568;
-        font-size: 0.95rem;
-        line-height: 1.6;
+        color: #1a1a1a;
+        font-size: 1rem;
+        line-height: 1.7;
         margin: 0;
-    }
-    .metric-container {
-        background: #ffffff;
-        padding: 1.25rem;
-        border-radius: 10px;
-        border: 1px solid #e1e8ed;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        font-weight: 400;
     }
     .section-header {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #1a1a1a;
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #000000;
         margin-bottom: 1rem;
         padding-bottom: 0.5rem;
-        border-bottom: 2px solid #e1e8ed;
+        border-bottom: 3px solid #667eea;
     }
-    .cost-box {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+    /* Improve Streamlit default text */
+    .stMarkdown {
+        color: #1a1a1a;
+    }
+    .stMetric {
+        background-color: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+    .stMetric label {
+        color: #000000;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+    .stMetric [data-testid="stMetricValue"] {
+        color: #000000;
+        font-weight: 700;
+    }
+    /* Cost breakdown styling */
+    .cost-section {
+        background: #f8f9fa;
         padding: 1.5rem;
         border-radius: 12px;
+        border: 2px solid #dee2e6;
         margin: 1rem 0;
     }
-    .cost-box h3 {
-        color: white;
-        margin: 0 0 1rem 0;
+    .cost-title {
+        color: #000000;
         font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #667eea;
     }
-    .cost-metric {
+    .cost-item {
         display: flex;
         justify-content: space-between;
-        padding: 0.5rem 0;
-        border-bottom: 1px solid rgba(255,255,255,0.2);
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #dee2e6;
+        font-size: 1rem;
     }
-    .cost-metric:last-child {
-        border-bottom: none;
-        font-weight: 600;
+    .cost-item-label {
+        color: #1a1a1a;
+        font-weight: 500;
+    }
+    .cost-item-value {
+        color: #000000;
+        font-weight: 700;
         font-size: 1.1rem;
+    }
+    .cost-item:last-child {
+        border-bottom: none;
+        border-top: 2px solid #667eea;
         margin-top: 0.5rem;
+        padding-top: 1rem;
+    }
+    .cost-item:last-child .cost-item-label,
+    .cost-item:last-child .cost-item-value {
+        font-size: 1.2rem;
+        font-weight: 700;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -426,7 +459,10 @@ def main():
             height=400,
             plot_bgcolor='white',
             paper_bgcolor='white',
-            font=dict(size=11)
+            font=dict(size=13, color='#000000', family='Arial'),
+            title_font=dict(size=16, color='#000000', family='Arial'),
+            xaxis=dict(title_font=dict(size=13, color='#000000'), tickfont=dict(size=12, color='#000000')),
+            yaxis=dict(title_font=dict(size=13, color='#000000'), tickfont=dict(size=12, color='#000000'))
         )
         st.plotly_chart(fig_rul_hist, use_container_width=True)
         
@@ -456,7 +492,11 @@ def main():
                 height=400,
                 plot_bgcolor='white',
                 paper_bgcolor='white',
-                font=dict(size=11)
+                font=dict(size=13, color='#000000', family='Arial'),
+                title_font=dict(size=16, color='#000000', family='Arial'),
+                xaxis=dict(title_font=dict(size=13, color='#000000'), tickfont=dict(size=12, color='#000000')),
+                yaxis=dict(title_font=dict(size=13, color='#000000'), tickfont=dict(size=12, color='#000000')),
+                legend=dict(font=dict(size=12, color='#000000'))
             )
             st.plotly_chart(fig_rul_comparison, use_container_width=True)
     
@@ -476,7 +516,9 @@ def main():
             height=400,
             plot_bgcolor='white',
             paper_bgcolor='white',
-            font=dict(size=11)
+            font=dict(size=13, color='#000000', family='Arial'),
+            title_font=dict(size=16, color='#000000', family='Arial'),
+            legend=dict(font=dict(size=13, color='#000000'))
         )
         st.plotly_chart(fig_pie, use_container_width=True)
         
@@ -496,7 +538,11 @@ def main():
             height=400,
             plot_bgcolor='white',
             paper_bgcolor='white',
-            font=dict(size=11)
+            font=dict(size=13, color='#000000', family='Arial'),
+            title_font=dict(size=16, color='#000000', family='Arial'),
+            xaxis=dict(title_font=dict(size=13, color='#000000'), tickfont=dict(size=12, color='#000000')),
+            yaxis=dict(title_font=dict(size=13, color='#000000'), tickfont=dict(size=12, color='#000000')),
+            legend=dict(font=dict(size=12, color='#000000'))
         )
         st.plotly_chart(fig_failure_prob, use_container_width=True)
     
@@ -530,10 +576,13 @@ def main():
             y=["Low Risk (0)", "High Risk (1)"],
         )
         cm_fig.update_layout(
-            title="Failure Risk Model - Confusion Matrix",
+            title=dict(text="Failure Risk Model - Confusion Matrix", font=dict(size=16, color='#000000', family='Arial')),
             height=400,
             plot_bgcolor='white',
             paper_bgcolor='white',
+            font=dict(size=13, color='#000000', family='Arial'),
+            xaxis=dict(title_font=dict(size=13, color='#000000'), tickfont=dict(size=12, color='#000000')),
+            yaxis=dict(title_font=dict(size=13, color='#000000'), tickfont=dict(size=12, color='#000000'))
         )
         st.plotly_chart(cm_fig, use_container_width=True)
         
@@ -542,64 +591,83 @@ def main():
         st.markdown('<div class="section-header">Cost-Benefit Analysis</div>', unsafe_allow_html=True)
         
         cb = model_metrics['cost_benefit']
+        total_costs = cb['planned_maintenance_cost'] + cb['missed_failures_cost']
         
+        # Cost Assumptions Section
+        st.markdown("### Cost Assumptions")
+        assumption_col1, assumption_col2, assumption_col3 = st.columns(3)
+        with assumption_col1:
+            st.metric("Planned Maintenance", "$2,000", "per machine")
+        with assumption_col2:
+            st.metric("Unplanned Downtime", "$10,000", "per machine")
+        with assumption_col3:
+            st.metric("Emergency Repair", "$5,000", "per machine")
+        
+        st.markdown("---")
+        
+        # Costs and Savings Breakdown
         cost_col1, cost_col2 = st.columns(2)
         
         with cost_col1:
-            st.markdown("""
-            <div class="cost-box">
-                <h3>Costs</h3>
-                <div class="cost-metric">
-                    <span>Planned Maintenance (TP + FP)</span>
-                    <span>${:,.0f}</span>
-                </div>
-                <div class="cost-metric">
-                    <span>Missed Failures (FN)</span>
-                    <span>${:,.0f}</span>
-                </div>
-                <div class="cost-metric">
-                    <span>Total Costs</span>
-                    <span>${:,.0f}</span>
-                </div>
-            </div>
-            """.format(
-                cb['planned_maintenance_cost'],
-                cb['missed_failures_cost'],
-                cb['planned_maintenance_cost'] + cb['missed_failures_cost']
-            ), unsafe_allow_html=True)
+            st.markdown("#### Costs Incurred")
+            st.metric(
+                "Planned Maintenance",
+                f"${cb['planned_maintenance_cost']:,.0f}",
+                help="Cost of maintenance for True Positives (TP) and False Positives (FP): ({} + {}) × $2,000".format(cb['tp'], cb['fp'])
+            )
+            st.metric(
+                "Missed Failures Cost",
+                f"${cb['missed_failures_cost']:,.0f}",
+                help="Cost of unplanned downtime and emergency repair for False Negatives (FN): {} × ($10,000 + $5,000)".format(cb['fn'])
+            )
+            st.markdown("---")
+            st.metric(
+                "Total Costs",
+                f"${total_costs:,.0f}",
+                delta=None
+            )
         
         with cost_col2:
-            st.markdown("""
-            <div class="cost-box">
-                <h3>Savings & Net Benefit</h3>
-                <div class="cost-metric">
-                    <span>Prevented Downtime (TP)</span>
-                    <span>${:,.0f}</span>
-                </div>
-                <div class="cost-metric">
-                    <span style="opacity: 0.8;">Total Savings</span>
-                    <span>${:,.0f}</span>
-                </div>
-                <div class="cost-metric">
-                    <span>Net Benefit (ROI)</span>
-                    <span>${:,.0f}</span>
-                </div>
-            </div>
-            """.format(
-                cb['prevented_downtime_savings'],
-                cb['prevented_downtime_savings'],
-                cb['net_benefit']
-            ), unsafe_allow_html=True)
+            st.markdown("#### Savings Generated")
+            st.metric(
+                "Prevented Downtime",
+                f"${cb['prevented_downtime_savings']:,.0f}",
+                help="Savings from preventing downtime for True Positives (TP): {} × $10,000".format(cb['tp'])
+            )
+            st.metric(
+                "Total Savings",
+                f"${cb['prevented_downtime_savings']:,.0f}",
+                delta=None
+            )
+            st.markdown("---")
+            net_benefit_color = "normal" if cb['net_benefit'] > 0 else "inverse"
+            st.metric(
+                "Net Benefit (ROI)",
+                f"${cb['net_benefit']:,.0f}",
+                delta=f"{'Positive' if cb['net_benefit'] > 0 else 'Negative'} ROI"
+            )
         
-        st.info(f"""
-        **Cost Assumptions:** Planned maintenance: $2,000/machine | Unplanned downtime: $10,000/machine | 
-        Emergency repair: $5,000/machine
+        st.markdown("---")
         
-        **Confusion Matrix Breakdown:** TP={cb['tp']} (correctly identified failures) | FP={cb['fp']} (false alarms) | 
-        FN={cb['fn']} (missed failures) | TN={cb['tn']} (correctly identified safe machines)
+        # Confusion Matrix Explanation
+        st.markdown("### Model Performance Breakdown")
+        confusion_col1, confusion_col2, confusion_col3, confusion_col4 = st.columns(4)
         
-        **ROI Status:** {'Positive ROI - Model provides significant value' if cb['net_benefit'] > 0 else 'Needs optimization - Consider adjusting thresholds or improving model accuracy'}
-        """)
+        with confusion_col1:
+            st.metric("True Positives (TP)", cb['tp'], "Correctly identified failures")
+        with confusion_col2:
+            st.metric("False Positives (FP)", cb['fp'], "False alarms")
+        with confusion_col3:
+            st.metric("False Negatives (FN)", cb['fn'], "Missed failures")
+        with confusion_col4:
+            st.metric("True Negatives (TN)", cb['tn'], "Correctly identified safe machines")
+        
+        # ROI Status
+        st.markdown("---")
+        if cb['net_benefit'] > 0:
+            st.success(f"**ROI Status: Positive** - The model provides significant value with a net benefit of ${cb['net_benefit']:,.0f}. The predictive maintenance system is cost-effective and should be implemented.")
+        else:
+            st.warning(f"**ROI Status: Needs Optimization** - Current net benefit is ${cb['net_benefit']:,.0f}. Consider adjusting prediction thresholds or improving model accuracy to increase cost savings.")
     else:
         st.info("Model performance metrics are not available yet. Run the full pipeline to train models and generate data.")
     
