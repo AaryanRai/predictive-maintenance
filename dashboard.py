@@ -28,6 +28,7 @@ from sklearn.metrics import (
 )
 import subprocess
 import os
+import json
 
 warnings.filterwarnings('ignore')
 
@@ -214,7 +215,7 @@ def main():
             load_dashboard_data.clear()
             load_raw_dataset.clear()
             compute_model_metrics.clear()
-            st.experimental_rerun()
+            st.rerun()
     with col_download:
         if base_df is not None:
             st.download_button(
