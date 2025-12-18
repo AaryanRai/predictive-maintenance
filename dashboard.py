@@ -7,6 +7,8 @@ Interactive dashboard for project evaluation featuring:
 - Failure flags and risk categories (primary focus)
 - Machine health overview
 - Actionable maintenance recommendations
+- Cost-benefit analysis
+- Model performance metrics
 """
 
 import streamlit as st
@@ -28,40 +30,94 @@ from sklearn.metrics import (
 )
 import subprocess
 import os
-import json
 
 warnings.filterwarnings('ignore')
 
 # Page configuration
 st.set_page_config(
     page_title="Delta Industries - Predictive Maintenance",
-    page_icon="⚙️",
+    page_icon=None,
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for better styling
+# Modern CSS styling
 st.markdown("""
     <style>
     .main-header {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: #1f77b4;
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: #1a1a1a;
         text-align: center;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.02em;
+    }
+    .subheader {
+        font-size: 1.1rem;
+        color: #666;
+        text-align: center;
+        margin-bottom: 2rem;
+        font-weight: 400;
+    }
+    .info-card {
+        background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid #e1e8ed;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         margin-bottom: 1rem;
     }
-    .metric-card {
-        background-color: #f0f2f6;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        border-left: 4px solid #1f77b4;
+    .info-card h4 {
+        color: #1a1a1a;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        margin-top: 0;
     }
-    .alert-box {
-        background-color: #ffebee;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        border-left: 4px solid #d32f2f;
+    .info-card p {
+        color: #4a5568;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+    .metric-container {
+        background: #ffffff;
+        padding: 1.25rem;
+        border-radius: 10px;
+        border: 1px solid #e1e8ed;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .section-header {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e1e8ed;
+    }
+    .cost-box {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
         margin: 1rem 0;
+    }
+    .cost-box h3 {
+        color: white;
+        margin: 0 0 1rem 0;
+        font-size: 1.3rem;
+    }
+    .cost-metric {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    .cost-metric:last-child {
+        border-bottom: none;
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-top: 0.5rem;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -141,6 +197,17 @@ def compute_model_metrics():
     recall = recall_score(y_failure, failure_pred)
     cm = confusion_matrix(y_failure, failure_pred)
 
+    # Cost-benefit analysis
+    tp = cm[1, 1]
+    fp = cm[0, 1]
+    fn = cm[1, 0]
+    tn = cm[0, 0]
+    
+    planned_maintenance_cost = (tp + fp) * 2000
+    prevented_downtime_savings = tp * 10000
+    missed_failures_cost = fn * (10000 + 5000)  # Downtime + emergency repair
+    net_benefit = prevented_downtime_savings - planned_maintenance_cost - missed_failures_cost
+
     metrics = {
         "rul": {
             "mae": rul_mae,
@@ -153,6 +220,16 @@ def compute_model_metrics():
             "recall": recall,
             "confusion_matrix": cm,
         },
+        "cost_benefit": {
+            "planned_maintenance_cost": planned_maintenance_cost,
+            "prevented_downtime_savings": prevented_downtime_savings,
+            "missed_failures_cost": missed_failures_cost,
+            "net_benefit": net_benefit,
+            "tp": int(tp),
+            "fp": int(fp),
+            "fn": int(fn),
+            "tn": int(tn),
+        }
     }
     return metrics
 
@@ -197,7 +274,8 @@ def run_full_pipeline():
 
 def main():
     # Header
-    st.markdown('<div class="main-header">⚙️ Delta Industries - Predictive Maintenance Dashboard</div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-header">Delta Industries - Predictive Maintenance Dashboard</div>', unsafe_allow_html=True)
+    st.markdown('<div class="subheader">Remaining Useful Life (RUL) Prediction and Failure Risk Assessment System</div>', unsafe_allow_html=True)
     st.markdown("---")
     
     # Load data
@@ -206,10 +284,10 @@ def main():
     model_metrics = compute_model_metrics()
     
     # Sidebar controls: data actions + filters
-    st.sidebar.header("⚙️ Data & Pipeline Controls")
+    st.sidebar.header("Data & Pipeline Controls")
     col_generate, col_download = st.sidebar.columns(2)
     with col_generate:
-        if st.button("Run pipeline", help="Regenerate data, retrain models, and refresh dashboard outputs."):
+        if st.button("Run Pipeline", help="Regenerate data, retrain models, and refresh dashboard outputs.", use_container_width=True):
             run_full_pipeline()
             # Clear caches so fresh data is used on next rerun
             load_dashboard_data.clear()
@@ -224,12 +302,13 @@ def main():
                 file_name="delta_industries_machine_health.csv",
                 mime="text/csv",
                 help="Download the underlying machine health dataset.",
+                use_container_width=True,
             )
         else:
             st.caption("Base dataset not found yet. Run the pipeline first.")
     
     # Sidebar filters
-    st.sidebar.header("🔍 Filters")
+    st.sidebar.header("Filters")
     
     # Machine type filter
     machine_types = ['All'] + sorted(df['machine_type'].unique().tolist())
@@ -259,16 +338,61 @@ def main():
     elif failure_flag_filter == 'Not Flagged (0)':
         filtered_df = filtered_df[filtered_df['failure_flag'] == 0]
     
+    # Information Cards Section
+    st.markdown('<div class="section-header">Project Overview</div>', unsafe_allow_html=True)
+    info_col1, info_col2, info_col3 = st.columns(3)
+    
+    with info_col1:
+        st.markdown("""
+        <div class="info-card">
+            <h4>Dataset</h4>
+            <p>Synthetic machine-health data for Delta Industries with weekly snapshots per machine. 
+            Includes sensor readings (temperature, vibration, pressure, load factor), machine metadata 
+            (type, age, maintenance history), and engineered targets for remaining useful life (RUL) 
+            and 30-day failure risk prediction.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with info_col2:
+        st.markdown("""
+        <div class="info-card">
+            <h4>Models</h4>
+            <p>Two complementary models: Linear Regression predicts continuous RUL in days for 
+            maintenance planning, while Logistic Regression estimates binary failure probability 
+            (within 30 days) for risk-based decision making. Both use scaled numerical features 
+            and one-hot encoded machine types.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with info_col3:
+        st.markdown("""
+        <div class="info-card">
+            <h4>Business Logic</h4>
+            <p>Risk categories: RED (urgent, failure_prob ≥ 70% or RUL ≤ 30 days), YELLOW 
+            (schedule maintenance, failure_prob ≥ 40% or RUL ≤ 60 days), GREEN (monitor only). 
+            Cost assumptions: $2,000 planned maintenance, $10,000 unplanned downtime, $5,000 
+            emergency repair per machine.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
     # Key Metrics Row
-    st.subheader("📊 Key Metrics")
+    st.markdown('<div class="section-header">Key Metrics</div>', unsafe_allow_html=True)
     col1, col2, col3, col4 = st.columns(4)
     
+    # Fix: Count unique machines, not total rows
+    unique_machines = filtered_df['machine_id'].nunique()
+    total_unique_machines = df['machine_id'].nunique()
+    
     with col1:
-        st.metric("Total Machines", len(filtered_df))
+        st.metric("Total Machines", unique_machines, delta=f"{unique_machines - total_unique_machines}" if unique_machines != total_unique_machines else None)
     
     with col2:
-        red_count = len(filtered_df[filtered_df['risk_category'] == 'RED'])
-        st.metric("🔴 At Risk (RED)", red_count, delta=f"{red_count - len(df[df['risk_category'] == 'RED'])}")
+        red_machines = filtered_df[filtered_df['risk_category'] == 'RED']
+        red_count = red_machines['machine_id'].nunique() if len(red_machines) > 0 else 0
+        total_red = df[df['risk_category'] == 'RED']['machine_id'].nunique() if len(df[df['risk_category'] == 'RED']) > 0 else 0
+        st.metric("At Risk (RED)", red_count, delta=f"{red_count - total_red}" if red_count != total_red else None)
     
     with col3:
         avg_rul = filtered_df['RUL_days_predicted'].mean()
@@ -285,7 +409,7 @@ def main():
     col1, col2 = st.columns(2)
     
     with col1:
-        st.subheader("📈 RUL Overview")
+        st.markdown('<div class="section-header">RUL Overview</div>', unsafe_allow_html=True)
         
         # RUL Distribution Histogram
         fig_rul_hist = px.histogram(
@@ -293,12 +417,17 @@ def main():
             x='RUL_days_predicted',
             nbins=30,
             title='RUL Distribution',
-            labels={'RUL_days_predicted': 'Remaining Useful Life (Days)', 'count': 'Number of Machines'},
-            color_discrete_sequence=['#1f77b4']
+            labels={'RUL_days_predicted': 'Remaining Useful Life (Days)', 'count': 'Number of Snapshots'},
+            color_discrete_sequence=['#667eea']
         )
-        fig_rul_hist.add_vline(x=30, line_dash="dash", line_color="red", annotation_text="30 days threshold")
-        fig_rul_hist.add_vline(x=60, line_dash="dash", line_color="orange", annotation_text="60 days threshold")
-        fig_rul_hist.update_layout(height=400)
+        fig_rul_hist.add_vline(x=30, line_dash="dash", line_color="#d32f2f", annotation_text="30 days threshold", annotation_position="top")
+        fig_rul_hist.add_vline(x=60, line_dash="dash", line_color="#f57c00", annotation_text="60 days threshold", annotation_position="top")
+        fig_rul_hist.update_layout(
+            height=400,
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            font=dict(size=11)
+        )
         st.plotly_chart(fig_rul_hist, use_container_width=True)
         
         # RUL vs Actual RUL Comparison (if available)
@@ -319,14 +448,20 @@ def main():
                 x=[0, max_val],
                 y=[0, max_val],
                 mode='lines',
-                line=dict(dash='dash', color='gray'),
-                name='Perfect Prediction'
+                line=dict(dash='dash', color='gray', width=1),
+                name='Perfect Prediction',
+                showlegend=False
             ))
-            fig_rul_comparison.update_layout(height=400)
+            fig_rul_comparison.update_layout(
+                height=400,
+                plot_bgcolor='white',
+                paper_bgcolor='white',
+                font=dict(size=11)
+            )
             st.plotly_chart(fig_rul_comparison, use_container_width=True)
     
     with col2:
-        st.subheader("⚠️ Failure Risk Distribution")
+        st.markdown('<div class="section-header">Failure Risk Distribution</div>', unsafe_allow_html=True)
         
         # Risk Category Pie Chart
         risk_counts = filtered_df['risk_category'].value_counts()
@@ -337,7 +472,12 @@ def main():
             color=risk_counts.index,
             color_discrete_map={'RED': '#d32f2f', 'YELLOW': '#f57c00', 'GREEN': '#388e3c'}
         )
-        fig_pie.update_layout(height=400)
+        fig_pie.update_layout(
+            height=400,
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            font=dict(size=11)
+        )
         st.plotly_chart(fig_pie, use_container_width=True)
         
         # Failure Probability Distribution
@@ -346,20 +486,25 @@ def main():
             x='failure_probability',
             nbins=30,
             title='Failure Probability Distribution',
-            labels={'failure_probability': 'Failure Probability', 'count': 'Number of Machines'},
+            labels={'failure_probability': 'Failure Probability', 'count': 'Number of Snapshots'},
             color='risk_category',
             color_discrete_map={'RED': '#d32f2f', 'YELLOW': '#f57c00', 'GREEN': '#388e3c'}
         )
-        fig_failure_prob.add_vline(x=0.7, line_dash="dash", line_color="red", annotation_text="70% threshold")
-        fig_failure_prob.add_vline(x=0.4, line_dash="dash", line_color="orange", annotation_text="40% threshold")
-        fig_failure_prob.update_layout(height=400)
+        fig_failure_prob.add_vline(x=0.7, line_dash="dash", line_color="#d32f2f", annotation_text="70% threshold", annotation_position="top")
+        fig_failure_prob.add_vline(x=0.4, line_dash="dash", line_color="#f57c00", annotation_text="40% threshold", annotation_position="top")
+        fig_failure_prob.update_layout(
+            height=400,
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            font=dict(size=11)
+        )
         st.plotly_chart(fig_failure_prob, use_container_width=True)
     
     st.markdown("---")
     
     # Model Performance Summary
     if model_metrics is not None:
-        st.subheader("🧪 Model Performance (On Full Dataset)")
+        st.markdown('<div class="section-header">Model Performance (Full Dataset)</div>', unsafe_allow_html=True)
         col_rul, col_fail = st.columns(2)
 
         with col_rul:
@@ -387,34 +532,104 @@ def main():
         cm_fig.update_layout(
             title="Failure Risk Model - Confusion Matrix",
             height=400,
+            plot_bgcolor='white',
+            paper_bgcolor='white',
         )
         st.plotly_chart(cm_fig, use_container_width=True)
+        
+        # Cost-Benefit Analysis
+        st.markdown("---")
+        st.markdown('<div class="section-header">Cost-Benefit Analysis</div>', unsafe_allow_html=True)
+        
+        cb = model_metrics['cost_benefit']
+        
+        cost_col1, cost_col2 = st.columns(2)
+        
+        with cost_col1:
+            st.markdown("""
+            <div class="cost-box">
+                <h3>Costs</h3>
+                <div class="cost-metric">
+                    <span>Planned Maintenance (TP + FP)</span>
+                    <span>${:,.0f}</span>
+                </div>
+                <div class="cost-metric">
+                    <span>Missed Failures (FN)</span>
+                    <span>${:,.0f}</span>
+                </div>
+                <div class="cost-metric">
+                    <span>Total Costs</span>
+                    <span>${:,.0f}</span>
+                </div>
+            </div>
+            """.format(
+                cb['planned_maintenance_cost'],
+                cb['missed_failures_cost'],
+                cb['planned_maintenance_cost'] + cb['missed_failures_cost']
+            ), unsafe_allow_html=True)
+        
+        with cost_col2:
+            st.markdown("""
+            <div class="cost-box">
+                <h3>Savings & Net Benefit</h3>
+                <div class="cost-metric">
+                    <span>Prevented Downtime (TP)</span>
+                    <span>${:,.0f}</span>
+                </div>
+                <div class="cost-metric">
+                    <span style="opacity: 0.8;">Total Savings</span>
+                    <span>${:,.0f}</span>
+                </div>
+                <div class="cost-metric">
+                    <span>Net Benefit (ROI)</span>
+                    <span>${:,.0f}</span>
+                </div>
+            </div>
+            """.format(
+                cb['prevented_downtime_savings'],
+                cb['prevented_downtime_savings'],
+                cb['net_benefit']
+            ), unsafe_allow_html=True)
+        
+        st.info(f"""
+        **Cost Assumptions:** Planned maintenance: $2,000/machine | Unplanned downtime: $10,000/machine | 
+        Emergency repair: $5,000/machine
+        
+        **Confusion Matrix Breakdown:** TP={cb['tp']} (correctly identified failures) | FP={cb['fp']} (false alarms) | 
+        FN={cb['fn']} (missed failures) | TN={cb['tn']} (correctly identified safe machines)
+        
+        **ROI Status:** {'Positive ROI - Model provides significant value' if cb['net_benefit'] > 0 else 'Needs optimization - Consider adjusting thresholds or improving model accuracy'}
+        """)
     else:
         st.info("Model performance metrics are not available yet. Run the full pipeline to train models and generate data.")
     
     st.markdown("---")
     
     # Alert Panel - RED Category Machines
-    st.subheader("🚨 Urgent Action Required (RED Category)")
+    st.markdown('<div class="section-header">Urgent Action Required (RED Category)</div>', unsafe_allow_html=True)
     red_machines = filtered_df[filtered_df['risk_category'] == 'RED'].copy()
     
     if len(red_machines) > 0:
+        # Get unique machines in RED category
+        red_unique_machines = red_machines['machine_id'].unique()
+        
         # Sort by RUL (lowest first) and failure probability (highest first)
         red_machines = red_machines.sort_values(['RUL_days_predicted', 'failure_probability'], ascending=[True, False])
         
         # Display key metrics for RED machines
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.metric("Total RED Machines", len(red_machines))
+            st.metric("Total RED Machines", len(red_unique_machines))
         with col2:
             st.metric("Lowest RUL", f"{red_machines['RUL_days_predicted'].min():.1f} days")
         with col3:
             st.metric("Highest Failure Prob", f"{red_machines['failure_probability'].max():.1%}")
         
-        # Display table
+        # Display table (show latest snapshot per machine)
+        red_latest = red_machines.groupby('machine_id').first().reset_index()
         display_cols = ['machine_id', 'machine_type', 'RUL_days_predicted', 'failure_probability', 
                        'criticality_score', 'snapshot_date']
-        red_display = red_machines[display_cols].copy()
+        red_display = red_latest[display_cols].copy()
         red_display['RUL_days_predicted'] = red_display['RUL_days_predicted'].round(1)
         red_display['failure_probability'] = red_display['failure_probability'].apply(lambda x: f"{x:.1%}")
         red_display['snapshot_date'] = red_display['snapshot_date'].dt.strftime('%Y-%m-%d')
@@ -424,14 +639,14 @@ def main():
         st.dataframe(red_display, use_container_width=True, hide_index=True)
         
         # Action recommendations
-        st.info("💡 **Action Required**: Schedule maintenance within 1 week for these machines. Prepare spare parts and assign priority technicians.")
+        st.info("**Action Required:** Schedule maintenance within 1 week for these machines. Prepare spare parts and assign priority technicians.")
     else:
-        st.success("✅ No machines currently in RED category. All systems operating normally.")
+        st.success("No machines currently in RED category. All systems operating normally.")
     
     st.markdown("---")
     
     # Machine Details Table
-    st.subheader("📋 Machine Details Table")
+    st.markdown('<div class="section-header">Machine Details Table</div>', unsafe_allow_html=True)
     
     # Sort options
     sort_by = st.selectbox("Sort by", ['RUL (Lowest First)', 'RUL (Highest First)', 
@@ -501,7 +716,7 @@ def main():
     st.markdown("---")
     
     # Maintenance Schedule
-    st.subheader("📅 Maintenance Schedule")
+    st.markdown('<div class="section-header">Maintenance Schedule</div>', unsafe_allow_html=True)
     
     # Create maintenance schedule based on RUL
     schedule_df = filtered_df.copy()
@@ -514,10 +729,13 @@ def main():
     schedule_df = schedule_df.sort_values(['risk_order', 'RUL_days_predicted'], ascending=[True, True])
     schedule_df = schedule_df.drop('risk_order', axis=1)
     
+    # Show latest snapshot per machine
+    schedule_latest = schedule_df.groupby('machine_id').first().reset_index()
+    
     # Display schedule
     schedule_cols = ['machine_id', 'machine_type', 'RUL_days_predicted', 'failure_probability',
                     'risk_category', 'recommended_maintenance_date', 'days_until_maintenance']
-    schedule_display = schedule_df[schedule_cols].copy()
+    schedule_display = schedule_latest[schedule_cols].copy()
     schedule_display['RUL_days_predicted'] = schedule_display['RUL_days_predicted'].round(1)
     schedule_display['failure_probability'] = schedule_display['failure_probability'].apply(lambda x: f"{x:.1%}")
     schedule_display['recommended_maintenance_date'] = schedule_display['recommended_maintenance_date'].dt.strftime('%Y-%m-%d')
@@ -526,7 +744,7 @@ def main():
     
     st.dataframe(schedule_display.head(50), use_container_width=True, hide_index=True)
     
-    st.info("💡 **Note**: Recommended maintenance dates are calculated based on predicted RUL. Machines with RED category should be scheduled immediately.")
+    st.info("**Note:** Recommended maintenance dates are calculated based on predicted RUL. Machines with RED category should be scheduled immediately.")
     
     # Footer
     st.markdown("---")
