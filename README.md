@@ -295,9 +295,9 @@ The evaluation script includes a cost-benefit analysis comparing:
 
 ### Author
 
-Senior Data Scientist & Manufacturing Analytics Consultant
+Aaryan Rai - AI Engineer and Business Consultant 
 
 ### License
 
-This project is for educational and demonstration purposes.
+This project is for research & development purposes, and all the rights are reserved by the concerned personnel.
 
