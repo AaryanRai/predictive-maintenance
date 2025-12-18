@@ -140,7 +140,8 @@ def train_failure_risk_model(X_train, y_train, X_test, y_test, feature_names):
     X_test_scaled = scaler.transform(X_test)
     
     # Train model with balanced class weights (handles class imbalance)
-    model = LogisticRegression(class_weight='balanced', max_iter=1000, random_state=42)
+    # Use None for random_state to allow different model training each run
+    model = LogisticRegression(class_weight='balanced', max_iter=1000, random_state=None)
     model.fit(X_train_scaled, y_train)
     
     # Predictions (probabilities and binary)
@@ -253,8 +254,9 @@ if __name__ == "__main__":
     
     # Train-test split (80-20)
     print("\nSplitting data (80% train, 20% test)...")
+    # Use None for random_state to allow different splits each run
     X_train, X_test, y_rul_train, y_rul_test, y_failure_train, y_failure_test = train_test_split(
-        X, y_rul, y_failure, test_size=0.2, random_state=42, stratify=y_failure
+        X, y_rul, y_failure, test_size=0.2, random_state=None, stratify=y_failure
     )
     print(f"Training set: {len(X_train)} samples")
     print(f"Test set: {len(X_test)} samples")

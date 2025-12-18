@@ -956,7 +956,9 @@ def main():
     # Create maintenance schedule based on RUL
     schedule_df = filtered_df.copy()
     schedule_df['recommended_maintenance_date'] = pd.to_datetime(schedule_df['snapshot_date']) + pd.to_timedelta(schedule_df['RUL_days_predicted'], unit='D')
-    schedule_df['days_until_maintenance'] = (schedule_df['recommended_maintenance_date'] - pd.to_datetime('today')).dt.days
+    # Use latest snapshot date as reference for "today" calculation
+    latest_date = pd.to_datetime(schedule_df['snapshot_date'].max())
+    schedule_df['days_until_maintenance'] = (schedule_df['recommended_maintenance_date'] - latest_date).dt.days
     
     # Sort by priority (RED first, then by RUL)
     risk_order = {'RED': 1, 'YELLOW': 2, 'GREEN': 3}

@@ -12,15 +12,19 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import random
+import time
 
-# Set random seed for reproducibility
-np.random.seed(42)
-random.seed(42)
+# Set random seed based on current time for unique data each run
+# This ensures different data is generated each time the pipeline runs
+current_time_seed = int(time.time() * 1000) % (2**31)  # Use milliseconds for uniqueness
+np.random.seed(current_time_seed)
+random.seed(current_time_seed)
+print(f"Using random seed: {current_time_seed} (ensures unique data generation)")
 
 def generate_machine_failure_dates(n_machines=40):
     """
-    Generate realistic failure dates for machines.
-    Machines fail at different times based on their criticality and type.
+    Generate realistic machine information with varied lifecycle stages.
+    Not all machines are approaching failure - we need a realistic mix.
     """
     machine_types = ['CNC', 'Lathe', 'Press', 'Milling', 'Grinding']
     
@@ -34,50 +38,105 @@ def generate_machine_failure_dates(n_machines=40):
         # Higher criticality machines fail sooner (more usage)
         criticality = random.choices([1, 2, 3, 4, 5], weights=[0.1, 0.15, 0.25, 0.3, 0.2])[0]
         
-        # Failure date: between 90 and 450 days from base date
-        # Higher criticality = earlier failure
-        days_to_failure = 450 - (criticality * 30) + np.random.normal(0, 20)
-        days_to_failure = max(90, min(450, days_to_failure))
+        # Realistic approach: Only some machines will fail during observation period
+        # ~60% will be healthy (won't fail during observation), ~25% will be in warning, ~15% will be critical
+        # Observation period is 52 weeks = 364 days
+        lifecycle_stage = random.choices(
+            ['healthy', 'warning', 'critical'],
+            weights=[0.6, 0.25, 0.15]
+        )[0]
+        
+        if lifecycle_stage == 'healthy':
+            # Healthy machines: failure is far in the future, well beyond observation period (450-700 days)
+            # This ensures they remain healthy throughout the 52-week (364-day) observation period
+            days_to_failure = random.randint(450, 700)
+        elif lifecycle_stage == 'warning':
+            # Warning machines: failure is medium-term, may or may not fail during observation (150-400 days)
+            # Some will fail, some won't
+            days_to_failure = random.randint(150, 400)
+        else:  # critical
+            # Critical machines: failure is near-term, will likely fail during observation (10-150 days)
+            days_to_failure = random.randint(10, 150)
+        
+        # Adjust based on criticality (higher criticality = earlier failure, but not too extreme)
+        # For healthy machines, reduce the adjustment to keep them healthy
+        if lifecycle_stage == 'healthy':
+            days_to_failure = max(400, days_to_failure - (criticality * 5))
+        else:
+            days_to_failure = max(10, days_to_failure - (criticality * 8))
+        
         failure_date = base_date + timedelta(days=int(days_to_failure))
         
         machines.append({
             'machine_id': machine_id,
             'machine_type': machine_type,
             'criticality_score': criticality,
-            'failure_date': failure_date
+            'failure_date': failure_date,
+            'lifecycle_stage': lifecycle_stage
         })
     
     return pd.DataFrame(machines)
 
-def generate_weekly_snapshots(machine_info, weeks_before_failure=20):
+def generate_weekly_snapshots(machine_info, observation_weeks=52):
     """
-    Generate weekly health snapshots for each machine.
-    Sensor values degrade as failure approaches.
+    Generate weekly health snapshots for each machine over a fixed observation period.
+    Creates realistic mix of healthy, warning, and critical machines.
     """
     snapshots = []
     base_date = datetime(2023, 1, 1)
+    end_date = base_date + timedelta(weeks=observation_weeks)
     
     for _, machine in machine_info.iterrows():
         machine_id = machine['machine_id']
         machine_type = machine['machine_type']
         criticality = machine['criticality_score']
         failure_date = machine['failure_date']
+        lifecycle_stage = machine['lifecycle_stage']
         
-        # Generate snapshots starting 20 weeks before failure
-        snapshot_date = failure_date - timedelta(weeks=weeks_before_failure)
+        # Start generating snapshots from base_date
+        snapshot_date = base_date
         
         # Machine age at first snapshot (random between 100-500 days)
         initial_age = random.randint(100, 500)
         
         week_num = 0
-        while snapshot_date < failure_date:
-            # Calculate days until failure (RUL)
+        while snapshot_date < end_date:
+            # Calculate days until failure (RUL) - can be negative if failure already passed
             rul_days = (failure_date - snapshot_date).days
             
+            # Only generate snapshots if machine hasn't failed yet (RUL > 0)
+            # Or if we want to include post-failure data (for now, skip post-failure)
+            if rul_days <= 0:
+                snapshot_date += timedelta(weeks=1)
+                week_num += 1
+                continue
+            
             # Normalized degradation factor (0 = healthy, 1 = failure)
-            # More degradation as we approach failure
-            degradation = 1 - (rul_days / (weeks_before_failure * 7))
-            degradation = max(0, min(1, degradation))
+            # Use a realistic degradation curve based on RUL
+            # Degradation increases as RUL decreases, but with realistic bounds
+            
+            # Base degradation: inverse relationship with RUL
+            # For very high RUL (>300 days), degradation is minimal (0-0.2)
+            # For medium RUL (100-300 days), degradation is moderate (0.2-0.6)
+            # For low RUL (<100 days), degradation is high (0.6-1.0)
+            
+            if rul_days > 300:
+                # Very healthy: minimal degradation (0-0.2)
+                base_degradation = 0.0 + (300 / rul_days) * 0.2
+                degradation = base_degradation + np.random.normal(0, 0.05)
+                degradation = max(0.0, min(0.3, degradation))
+            elif rul_days > 100:
+                # Moderate health: medium degradation (0.2-0.6)
+                # Linear interpolation between 0.2 (at 300 days) and 0.6 (at 100 days)
+                base_degradation = 0.2 + (300 - rul_days) / 200 * 0.4
+                degradation = base_degradation + np.random.normal(0, 0.1)
+                degradation = max(0.2, min(0.7, degradation))
+            else:
+                # Critical: high degradation (0.6-1.0)
+                # Linear interpolation between 0.6 (at 100 days) and 1.0 (at 0 days)
+                base_degradation = 0.6 + (100 - rul_days) / 100 * 0.4
+                degradation = base_degradation + np.random.normal(0, 0.1)
+                degradation = max(0.6, min(1.0, degradation))
             
             # Age increases with each snapshot
             age_days = initial_age + (week_num * 7)
@@ -193,9 +252,9 @@ if __name__ == "__main__":
     machine_info = generate_machine_failure_dates(n_machines=40)
     print(f"Generated {len(machine_info)} machines")
     
-    # Generate weekly snapshots
+    # Generate weekly snapshots (52 weeks = 1 year of observations)
     print("\nStep 2: Generating weekly health snapshots...")
-    df = generate_weekly_snapshots(machine_info, weeks_before_failure=20)
+    df = generate_weekly_snapshots(machine_info, observation_weeks=52)
     print(f"Generated {len(df)} weekly snapshots")
     
     # Validate dataset

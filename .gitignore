@@ -4,3 +4,5 @@ outputs/
 .venv/
 .env
 .cursor/
+.DS_Store
+*.pkl
