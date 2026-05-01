@@ -252,11 +252,10 @@ For detailed usage instructions, see `DASHBOARD_GUIDE.md`.
 
 ### Key Features
 
-✅ **Explainable Models**: Linear and Logistic Regression for easy interpretation
-✅ **Realistic Data**: Synthetic dataset with logical degradation patterns
-✅ **Business-Focused**: Clear risk categories and actionable insights
-✅ **Production-Ready**: Clean code structure suitable for deployment
-✅ **Viva-Ready**: Well-documented and logically structured
+- **Explainable Models**: Linear and Logistic Regression for easy interpretation
+- **Realistic Data**: Synthetic dataset with logical degradation patterns
+- **Business-Focused**: Clear risk categories and actionable insights
+- **Production-Ready**: Clean code structure suitable for deployment
 
 ### Model Performance Expectations
 
